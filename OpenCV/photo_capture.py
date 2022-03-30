@@ -16,9 +16,7 @@ cap = cv.VideoCapture(0)
 ret, frame = cap.read()
 
 # Show and save capture
-# Note: plt.imshow flips R and B color channels since
-# capture is in RGB format, but OpenCV looks for BGR format 
-plt.imshow(frame)
+plt.imshow(cv.cvtColor(frame,cv.COLOR_BGR2RGB))
 cv.imwrite('webcam_photo.jpg',frame)
 
 # Releases camera from being 'in use'
