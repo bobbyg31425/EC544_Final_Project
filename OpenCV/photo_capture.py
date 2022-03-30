@@ -2,7 +2,7 @@
 """
 Created on Tue Mar 29 20:35:02 2022
 
-@author: bobby
+Purpose: Take a photo via the webcam
 """
 
 # Importing libraries
