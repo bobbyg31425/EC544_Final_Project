@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 """
+Created on Wed Apr  6 12:13:13 2022
+
+@author: 212765608
+"""
+# -*- coding: utf-8 -*-
+"""
 Created on Tue Mar 29 21:14:49 2022
 
 Purpose: Display original, mask, and result video. Allow calibration of HSV values for masks.
@@ -46,7 +52,7 @@ while cap.isOpened():
     u_b = np.array([u_h, u_s, u_v])
 
     mask = cv.inRange(hsv, l_b, u_b)
-    mask = cv.fastNlMeansDenoising(mask,None,10,10,7,21 )
+    #mask = cv.fastNlMeansDenoising(mask,None,10,10,7,21 )
     res = cv.bitwise_and(frame, frame, mask=mask)
 
     # find contours in the binary image
@@ -55,9 +61,11 @@ while cap.isOpened():
     for c in contours:
         area = cv.contourArea(c)
         
-        if cv.contourArea(c) > 15000:
-            cv.drawContours(frame,c,-1, (0,255,255),3)
-            print(area)
+        if cv.contourArea(c) > 5000:
+            #cv.drawContours(frame,c,-1, (0,255,255),3)
+            x,y,w,h = cv.boundingRect(c)
+            cv.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),2)
+            #print(area)
             # calculate moments for each contour
             M = cv.moments(c)
              
@@ -67,7 +75,9 @@ while cap.isOpened():
                 cY = int(M["m01"] / M["m00"])
             else:
                 cX, cY = 0, 0
-        
+                
+            print(cX, ",", cY)
+            
             
             cv.circle(frame, (cX, cY), 5, (255, 255, 255), -1)
             cv.putText(frame, "centroid", (cX - 25, cY - 25),cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
@@ -81,21 +91,6 @@ while cap.isOpened():
     # Close webcam feed if q is pressed
     if cv.waitKey(1) & 0xFF == ord('q'):
         break
-
-
-# convert the image to grayscale
-#gray_image = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-
-# convert the grayscale image to binary image
-#ret,thresh = cv.threshold(gray_image,127,255,0)
-
-
-
-
-
-
-
-
 
 
 # Releases webcam and closes frame
