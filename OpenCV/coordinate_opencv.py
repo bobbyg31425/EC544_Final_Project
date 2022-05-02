@@ -13,8 +13,8 @@ def nothing(x):
     pass
 
 def pixel_to_mm(pixel):
-    mm = pixel / 20
-    return mm
+    mm = pixel / 13.25
+    return int(mm)
 
 # Connect to capture device 640x480
 cap = cv.VideoCapture(0);
@@ -91,13 +91,16 @@ while cap.isOpened():
     # Create 3 windows (1) original, (2) mask, (3) result
     cv.imshow("frame", frame)
     cv.imshow("mask", mask)
-    #cv.imshow("res", res)
+    cv.imshow("res", res)
     
     
     # command robot to move if d is pressed
     if keyboard.is_pressed("d"):
-        start_coord = [-100, 40, 20] # x,y,z
-        end_coord = [100, 40, 30] # x,y,z
+        x1 = pixel_to_mm(cX)
+        y1 = pixel_to_mm(cY)
+        height = 20
+        start_coord = [-x1, y1, height] # x,y,z
+        end_coord = [100, 40, height] # x,y,z
         
         
         arm.set_speed(60)
