@@ -7,6 +7,7 @@ from piarm import PiArm
 import numpy as np
 import cv2 as cv
 import keyboard
+from threading import Thread
 
 #trackbar callback fucntion does nothing but required for trackbar
 def nothing(x):
@@ -15,6 +16,38 @@ def nothing(x):
 def pixel_to_mm(pixel):
     mm = pixel / 1.5
     return int(mm)
+
+def robot_move(x1,y1):
+    print("d")
+    #x1 = 238 - pixel_to_mm(cX)
+    #y1 = pixel_to_mm(cY)
+    height = 30
+    #print("x: ", x1, "y: ", y1)
+    if (x1 > 80): x1 = 80
+    if (x1 < -80): x1 = -80
+    if (y1 > 100): y1 = 100
+    
+    start_coord = [x1, y1, height] # x,y,z
+    end_coord = [100, 40, height] # x,y,z
+    
+    
+    arm.set_speed(60)
+    arm.set_hanging_clip(20)
+    start_coord_up = [start_coord[0], start_coord[1], 80]
+    arm.do_by_coord(start_coord_up)
+    arm.do_by_coord(start_coord)
+    arm.set_hanging_clip(90)
+    arm.do_by_coord(start_coord_up)
+    
+    end_coord_up = [end_coord[0], end_coord[1], 80]
+    arm.do_by_coord(end_coord_up)
+    
+    arm.do_by_coord(end_coord)
+    arm.set_hanging_clip(20)
+    arm.do_by_coord(end_coord_up)
+    
+    arm.do_by_coord([0,80,80])
+    arm.set_hanging_clip(90)
 
 # Connect to capture device 640x480
 cap = cv.VideoCapture(0);
@@ -35,6 +68,8 @@ arm = PiArm([1,2,3])
 arm.set_offset([0,0,0])
 arm.hanging_clip_init(PWM('P3'))
 
+x_pos = 50
+y_pos = 50
 
 # Establishes loop through every frame until webcam is closed
 while cap.isOpened():
@@ -66,7 +101,7 @@ while cap.isOpened():
     for c in contours:
         area = cv.contourArea(c)
         
-        if cv.contourArea(c) > 2000:
+        if cv.contourArea(c) > 1500:
             #cv.drawContours(frame,c,-1, (0,255,255),3)
             x,y,w,h = cv.boundingRect(c)
             cv.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),2)
@@ -81,10 +116,10 @@ while cap.isOpened():
             else:
                 cX, cY = 0, 0
             
-            x1 = 238 - pixel_to_mm(cX)
-            y1 = pixel_to_mm(cY)
+            x_pos = 238 - pixel_to_mm(cX)
+            y_pos = pixel_to_mm(cY)
             print("pixel: ", cX, ",", cY)
-            print("command: ", x1,",",y1)
+            print("command: ", x_pos,",",y_pos)
             print("\n")
             
             cv.circle(frame, (cX, cY), 5, (255, 255, 255), -1)
@@ -95,10 +130,14 @@ while cap.isOpened():
     cv.imshow("frame", frame)
     cv.imshow("mask", mask)
     #cv.imshow("res", res)
-    
-    
+
+    t1 = Thread(target = robot_move, args=(x_pos,y_pos),)
+
     # command robot to move if d is pressed
     if cv.waitKey(10) & 0xFF == ord('d'):
+        print("d")
+        t1.start()
+        '''
         print("d")
         #x1 = 238 - pixel_to_mm(cX)
         #y1 = pixel_to_mm(cY)
@@ -127,7 +166,8 @@ while cap.isOpened():
         arm.set_hanging_clip(20)
         arm.do_by_coord(end_coord_up)
         
-        arm.do_by_coord([0,80,80])  
+        arm.do_by_coord([0,80,80])
+        '''
     
     # Close webcam feed if q is pressed
     if cv.waitKey(10) & 0xFF == ord('q'):
