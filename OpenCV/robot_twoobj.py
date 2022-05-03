@@ -27,7 +27,7 @@ def pixel_to_mm(pixel):
 def robot_move(x,y):
     
     # Define start and end coordinates
-    start_coord = [x, y, 25] # x,y,z
+    start_coord = [x, y, 15] # x,y,z
     end_coord = [100, 40, 40] # x,y,z
     
     
@@ -56,15 +56,15 @@ cap = cv.VideoCapture(0);
 cv.namedWindow("Tracking",cv.WINDOW_NORMAL)
 
 cv.createTrackbar("LH_1", "Tracking", 64, 255, nothing) # object 1
-cv.createTrackbar("LS_1", "Tracking", 51, 255, nothing)
+cv.createTrackbar("LS_1", "Tracking", 114, 255, nothing)
 cv.createTrackbar("LV_1", "Tracking", 53, 255, nothing)
 cv.createTrackbar("UH_1", "Tracking", 102, 255, nothing)
 cv.createTrackbar("US_1", "Tracking", 255, 255, nothing)
 cv.createTrackbar("UV_1", "Tracking", 255, 255, nothing)
 
-cv.createTrackbar("LH_2", "Tracking", 0, 255, nothing) # object 2
-cv.createTrackbar("LS_2", "Tracking", 0, 255, nothing)
-cv.createTrackbar("LV_2", "Tracking", 0, 255, nothing)
+cv.createTrackbar("LH_2", "Tracking", 160, 255, nothing) # object 2
+cv.createTrackbar("LS_2", "Tracking", 89, 255, nothing)
+cv.createTrackbar("LV_2", "Tracking", 119, 255, nothing)
 cv.createTrackbar("UH_2", "Tracking", 255, 255, nothing)
 cv.createTrackbar("US_2", "Tracking", 255, 255, nothing)
 cv.createTrackbar("UV_2", "Tracking", 255, 255, nothing)
@@ -77,8 +77,10 @@ arm.set_offset([0,0,0])
 arm.hanging_clip_init(PWM('P3'))
 
 # Initializes arguments for threads to avoid error
-x_pos = 50
-y_pos = 50
+x1_cmd = 50
+y1_cmd = 50
+x2_cmd = 50
+y2_cmd = 50
 
 # Establishes loop through every frame until webcam is closed
 while cap.isOpened():
@@ -117,7 +119,7 @@ while cap.isOpened():
     res = cv.bitwise_and(frame, frame, mask=mask)
 
     # find contours in the object 1 mask
-    contours, hierarchy = cv.findContours(mask,cv.RETR_TREE,cv.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv.findContours(mask_one,cv.RETR_TREE,cv.CHAIN_APPROX_SIMPLE)
     
     for c in contours:
         area = cv.contourArea(c)
@@ -160,7 +162,7 @@ while cap.isOpened():
             #print("\n")
   
     # find contours in the object 2 mask
-    contours, hierarchy = cv.findContours(mask,cv.RETR_TREE,cv.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv.findContours(mask_two,cv.RETR_TREE,cv.CHAIN_APPROX_SIMPLE)
     
     for c in contours:
         area = cv.contourArea(c)
@@ -183,7 +185,7 @@ while cap.isOpened():
             
             # Put a cicle and text on the center of the detected object
             cv.circle(frame, (cX2, cY2), 5, (255, 255, 255), -1)
-            cv.putText(frame, "bj 2", (cX2 - 25, cY2 - 25),cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+            cv.putText(frame, "obj 2", (cX2 - 25, cY2 - 25),cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
             
             # Convert pixel location to millimeter location
             x2_mm = 238 - pixel_to_mm(cX2) # x coord is subtracted from 238 since robot arm is not at (0,0) of video feed
@@ -208,16 +210,18 @@ while cap.isOpened():
     cv.imshow("mask 2", mask_two)
     #cv.imshow("res", res)
 
+    t1 = Thread(target = robot_move, args=(x1_cmd,y1_cmd),) # Create thread for robot movement to allow continuation of video stream
+    t2 = Thread(target = robot_move, args=(x2_cmd,y2_cmd),) # Create thread for robot movement to allow continuation of video stream
     
     # command robot to move to object 1 if a is pressed
-    if cv.waitKey(5) & 0xFF == ord('d'):
-        t1 = Thread(target = robot_move, args=(x1_cmd,y1_cmd),) # Create thread for robot movement to allow continuation of video stream
+    if cv.waitKey(5) & 0xFF == ord('a'):
+        #t1 = Thread(target = robot_move, args=(x1_cmd,y1_cmd),) # Create thread for robot movement to allow continuation of video stream
         t1.start() # start thread
         
     # command robot to move to object 2 if b is pressed
     if cv.waitKey(5) & 0xFF == ord('d'):
-        t1 = Thread(target = robot_move, args=(x2_cmd,y2_cmd),) # Create thread for robot movement to allow continuation of video stream
-        t1.start() # start thread
+        #t2 = Thread(target = robot_move, args=(x2_cmd,y2_cmd),) # Create thread for robot movement to allow continuation of video stream
+        t2.start() # start thread
     
     # Close webcam feed if q is pressed
     if cv.waitKey(5) & 0xFF == ord('q'):

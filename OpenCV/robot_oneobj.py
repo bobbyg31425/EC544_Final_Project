@@ -56,7 +56,7 @@ cap = cv.VideoCapture(0);
 # Default values for trackbars based on GREEN object
 cv.namedWindow("Tracking")
 cv.createTrackbar("LH", "Tracking", 64, 255, nothing)
-cv.createTrackbar("LS", "Tracking", 51, 255, nothing)
+cv.createTrackbar("LS", "Tracking", 125, 255, nothing)
 cv.createTrackbar("LV", "Tracking", 53, 255, nothing)
 cv.createTrackbar("UH", "Tracking", 102, 255, nothing)
 cv.createTrackbar("US", "Tracking", 255, 255, nothing)
@@ -70,8 +70,8 @@ arm.set_offset([0,0,0])
 arm.hanging_clip_init(PWM('P3'))
 
 # Initializes arguments for threads to avoid error
-x_pos = 50
-y_pos = 50
+x_cmd = 50
+y_cmd = 50
 
 # Establishes loop through every frame until webcam is closed
 while cap.isOpened():
